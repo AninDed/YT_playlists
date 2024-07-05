@@ -1,2 +1,5 @@
 .venv
 google_creds.json
+build
+dist
+Prod

@@ -10,18 +10,19 @@ CREDS = Credentials.from_service_account_file('google_creds.json', scopes=SCOPE)
 file = open("my_creds.json", 'r', encoding='utf-8')
 data = json.load(file)
 URL = data["URL"]
+TABLE = data["TABLE"]
 BOT_TOKEN = data["BOT_TOKEN"]
 CHAT_IDS = data["CHAT_IDS"]
 
 PREFIX = "https://www.youtube.com/watch_videos?video_ids="
-SIZE = 35
+SIZE = 20
 NOW = datetime.now()
 
 
 def read_file(file_path):
     client = gspread.authorize(CREDS)
     sheet = client.open_by_url(file_path)
-    worksheet = sheet.worksheet('all_data (копия)')
+    worksheet = sheet.worksheet(TABLE)
     data = worksheet.get_all_values()
 
     worksheet = sheet.worksheet('STRING')
@@ -49,12 +50,14 @@ def get_videos(data, categories):
         videos = scrapetube.get_channel(channel_username=row['Channels'], content_type='videos')
         shorts = []
         if int(row['ShortsQnt']) != 0:
-            shorts = scrapetube.get_channel(channel_username=row['Channels'], content_type='shorts', limit=int(row['ShortsQnt']))
+            shorts = scrapetube.get_channel(channel_username=row['Channels'], content_type='shorts')
 
         print(row)
         try:
             for vid in videos:
                 try:
+                    if vid.get("upcomingEventData", None) is not None:
+                        continue
                     length = vid['lengthText']['simpleText'].split(':')
                     if len(length) == 1 or len(length) == 2 and (int(length[0]) < 10 or int(length[0]) == 10 and int(length[1]) == 00):
                         ans[row['Category']].add(vid['videoId'])
@@ -66,9 +69,15 @@ def get_videos(data, categories):
             print("   Video error")
             pass
         try:
+            shorts_limit = int(row['ShortsQnt'])
+            shorts_count = 0
             for vid in shorts:
                 try:
-                    ans[row['Category']].add(vid['videoId'])
+                    if vid['viewCountText']['accessibility']['accessibilityData'] is not None:
+                        ans[row['Category']].add(vid['videoId'])
+                        shorts_count += 1
+                        if shorts_count == shorts_limit:
+                            break
                 except:
                     print("   Short error")
                     continue
