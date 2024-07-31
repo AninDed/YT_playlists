@@ -4,7 +4,9 @@ import schedule
 import time
 import threading
 
-bot = telebot.TeleBot(util.BOT_TOKEN)
+ut = util.Util()
+bot = telebot.TeleBot(ut.BOT_TOKEN)
+del ut
 
 
 @bot.message_handler(commands=['ping'])
@@ -19,17 +21,20 @@ def run(message):
     print("\n\n\n---Starting run---")
     bot.send_message(message.chat.id, "Starting")
 
-    msgs = util.all_way()
+    ut = util.Util()
+    msgs = ut.all_way()
 
-    bot.send_message(chat_id=util.CHAT_IDS['games'],
+    bot.send_message(chat_id=ut.CHAT_IDS['games'],
                      text=msgs['games'],
                      parse_mode='HTML',
                      disable_web_page_preview=True)
 
-    bot.send_message(chat_id=util.CHAT_IDS['enter'],
+    bot.send_message(chat_id=ut.CHAT_IDS['enter'],
                      text=msgs['enter'],
                      parse_mode='HTML',
                      disable_web_page_preview=True)
+
+    del ut
 
     bot.send_message(message.chat.id, "Ending")
     print("---Ending run---\n\n\n")
@@ -37,17 +42,22 @@ def run(message):
 
 def scheduled_function():
     print("\n\n\n---Starting run---")
-    msgs = util.all_way()
 
-    bot.send_message(chat_id=util.CHAT_IDS['games'],
+    ut = util.Util()
+    msgs = ut.all_way()
+
+    bot.send_message(chat_id=ut.CHAT_IDS['games'],
                      text=msgs['games'],
                      parse_mode='HTML',
                      disable_web_page_preview=True)
 
-    bot.send_message(chat_id=util.CHAT_IDS['enter'],
+    bot.send_message(chat_id=ut.CHAT_IDS['enter'],
                      text=msgs['enter'],
                      parse_mode='HTML',
                      disable_web_page_preview=True)
+
+    del ut
+
     print("---Ending run---\n\n\n")
 
 
